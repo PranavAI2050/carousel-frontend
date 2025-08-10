@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import axios from "axios";
 
 function App() {
-  const [topic, setTopic] = React.useState("LLM Thoughts");
-  const [url, setUrl] = React.useState(
+  const [topic, setTopic] = useState("LLM Thoughts");
+  const [url, setUrl] = useState(
     "https://cookbook.openai.com/examples/gpt4-1_prompting_guide"
   );
-  const [template, setTemplate] = React.useState(`[Intro]
+  const [template, setTemplate] = useState(`[Intro]
 Tagline: 
 Title:
 Paragraph: 
@@ -28,17 +28,15 @@ Title:
 Paragraph: 
 Call to action:`);
 
-  const [responseText, setResponseText] = React.useState(null);
-  const [error, setError] = React.useState(null);
-  const [loading, setLoading] = React.useState(false);
-  const [currentSlide, setCurrentSlide] = React.useState(0);
+  const [responseText, setResponseText] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setResponseText(null);
-    setCurrentSlide(0);
 
     try {
       const res = await axios.post(
@@ -49,29 +47,14 @@ Call to action:`);
           url,
         }
       );
-      // Assuming res.data is the raw text string
-      setResponseText(res.data);
+
+      // Just take content as-is (assuming res.data.content is the string)
+      const text = typeof res.data === "string" ? res.data : res.data.content || "";
+      setResponseText(text);
     } catch (err) {
       setError(err.response?.data || err.message);
     }
     setLoading(false);
-  }
-
-  // Split the response text into slide chunks
-  function getSlidesFromText(text) {
-    if (!text) return [];
-    // Split by new section headers, keep header lines using a lookahead regex
-    const parts = text.split(/(?=\[(Intro|Slide \d+|Outro)\])/g);
-    return parts;
-  }
-
-  const slides = getSlidesFromText(responseText);
-
-  function prevSlide() {
-    setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
-  }
-  function nextSlide() {
-    setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
   }
 
   return (
@@ -80,8 +63,7 @@ Call to action:`);
         maxWidth: 720,
         margin: "40px auto",
         padding: 20,
-        fontFamily:
-          "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
         color: "#333",
       }}
     >
@@ -193,86 +175,21 @@ Call to action:`);
         </div>
       )}
 
-      {slides.length > 0 && (
-        <>
-          <div
-            style={{
-              marginBottom: 10,
-              fontWeight: "bold",
-              textAlign: "center",
-              color: "#28a745",
-              fontSize: 16,
-            }}
-          >
-            🎉 Generation Complete! Slide {currentSlide + 1} of {slides.length}
-          </div>
-
-          <div
-            style={{
-              position: "relative",
-              overflow: "hidden",
-              width: "100%",
-              minHeight: 260,
-              borderRadius: 8,
-              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-              background: "#fafafa",
-              padding: 20,
-              whiteSpace: "pre-wrap",
-              fontFamily: "monospace",
-              fontSize: 15,
-              lineHeight: 1.4,
-            }}
-          >
-            {slides[currentSlide]}
-          </div>
-
-          {slides.length > 1 && (
-            <>
-              <button
-                onClick={prevSlide}
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: 10,
-                  transform: "translateY(-50%)",
-                  backgroundColor: "rgba(0,0,0,0.3)",
-                  border: "none",
-                  borderRadius: "50%",
-                  width: 40,
-                  height: 40,
-                  color: "#fff",
-                  fontSize: 24,
-                  cursor: "pointer",
-                  userSelect: "none",
-                }}
-                aria-label="Previous Slide"
-              >
-                ‹
-              </button>
-              <button
-                onClick={nextSlide}
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  right: 10,
-                  transform: "translateY(-50%)",
-                  backgroundColor: "rgba(0,0,0,0.3)",
-                  border: "none",
-                  borderRadius: "50%",
-                  width: 40,
-                  height: 40,
-                  color: "#fff",
-                  fontSize: 24,
-                  cursor: "pointer",
-                  userSelect: "none",
-                }}
-                aria-label="Next Slide"
-              >
-                ›
-              </button>
-            </>
-          )}
-        </>
+      {responseText && (
+        <pre
+          style={{
+            whiteSpace: "pre-wrap",
+            backgroundColor: "#fafafa",
+            borderRadius: 8,
+            padding: 20,
+            fontFamily: "monospace",
+            fontSize: 15,
+            lineHeight: 1.4,
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+          }}
+        >
+          {responseText}
+        </pre>
       )}
     </div>
   );
