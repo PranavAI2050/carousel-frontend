@@ -37,6 +37,12 @@ Call to action:`);
     setLoading(true);
     setError(null);
     setResponseText(null);
+    const payload = {
+      topic,
+      jsontemplate: template,
+      url,
+    };
+    console.log("Sending payload to API:", payload);
 
     try {
       const res = await axios.post(
